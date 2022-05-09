@@ -39,8 +39,12 @@ void virt_ctlr_combined::relay_events(std::shared_ptr<phys_ctlr> phys)
                     libevdev_uinput_write_event(uidev, ev.type, ev.code == BTN_TL ? BTN_TRIGGER_HAPPY3 : BTN_TRIGGER_HAPPY4, ev.value);
                 ret = libevdev_next_event(evdev, LIBEVDEV_READ_FLAG_NORMAL, &ev);
                 continue;
+            } else if (phys == physr && ev.type == EV_KEY && (ev.code == BTN_A || ev.code == BTN_B)) {
+                /* Swap A, B buttons */
+                libevdev_uinput_write_event(uidev, ev.type, ev.code == BTN_A ? BTN_B: BTN_A, ev.value);
+                ret = libevdev_next_event(evdev, LIBEVDEV_READ_FLAG_NORMAL, &ev);
+                continue;
             }
-
 #if defined(ANDROID) || defined(__ANDROID__)
             /* Second remap the ZL and ZR buttons to analog trigger and map the DPAD to a HAT on android */
             if (phys == physl && ev.type == EV_KEY && ev.code == BTN_TL2) {
