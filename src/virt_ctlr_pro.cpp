@@ -26,14 +26,14 @@ void virt_ctlr_pro::relay_events(std::shared_ptr<phys_ctlr> phys)
                 ret = libevdev_next_event(evdev, LIBEVDEV_READ_FLAG_SYNC, &ev);
             }
         } else if (ret == LIBEVDEV_READ_STATUS_SUCCESS) {
-#if defined(ANDROID) || defined(__ANDROID__)
+#ifdef ANALOG_TRIGGERS
             /* remap the ZL and ZR buttons to analog trigger on android */
             if (ev.type == EV_KEY && ev.code == BTN_TL2) {
-                libevdev_uinput_write_event(uidev, EV_ABS, ABS_Z, ev.value);
+                libevdev_uinput_write_event(uidev, EV_ABS, ABS_Z, ev.value * 255);
                 ret = libevdev_next_event(evdev, LIBEVDEV_READ_FLAG_NORMAL, &ev);
                 continue;
             } else if (ev.type == EV_KEY && ev.code == BTN_TR2) {
-                libevdev_uinput_write_event(uidev, EV_ABS, ABS_RZ, ev.value);
+                libevdev_uinput_write_event(uidev, EV_ABS, ABS_RZ, ev.value * 255);
                 ret = libevdev_next_event(evdev, LIBEVDEV_READ_FLAG_NORMAL, &ev);
                 continue;
             }
@@ -184,26 +184,7 @@ virt_ctlr_pro::virt_ctlr_pro(std::shared_ptr<phys_ctlr> phys, epoll_mgr& epoll_m
         exit(1);
     }
 
-    libevdev_set_name(virt_evdev, "Nintendo Switch Virtual Pro Controller");
-
-    // Make sure that all of this configuration remains in sync with the hid-nintendo driver.
-    libevdev_enable_event_type(virt_evdev, EV_KEY);
-    libevdev_enable_event_code(virt_evdev, EV_KEY, BTN_SELECT, NULL);
-    libevdev_enable_event_code(virt_evdev, EV_KEY, BTN_Z, NULL);
-    libevdev_enable_event_code(virt_evdev, EV_KEY, BTN_THUMBL, NULL);
-    libevdev_enable_event_code(virt_evdev, EV_KEY, BTN_START, NULL);
-    libevdev_enable_event_code(virt_evdev, EV_KEY, BTN_MODE, NULL);
-    libevdev_enable_event_code(virt_evdev, EV_KEY, BTN_THUMBR, NULL);
-    libevdev_enable_event_code(virt_evdev, EV_KEY, BTN_SOUTH, NULL);
-    libevdev_enable_event_code(virt_evdev, EV_KEY, BTN_EAST, NULL);
-    libevdev_enable_event_code(virt_evdev, EV_KEY, BTN_NORTH, NULL);
-    libevdev_enable_event_code(virt_evdev, EV_KEY, BTN_WEST, NULL);
-    libevdev_enable_event_code(virt_evdev, EV_KEY, BTN_TL, NULL);
-    libevdev_enable_event_code(virt_evdev, EV_KEY, BTN_TR, NULL);
-#if !defined(ANDROID) && !defined(__ANDROID__)
-    libevdev_enable_event_code(virt_evdev, EV_KEY, BTN_TL2, NULL);
-    libevdev_enable_event_code(virt_evdev, EV_KEY, BTN_TR2, NULL);
-#endif
+    libevdev_set_name(virt_evdev, VIRT_PRO_NAME);
 
     struct input_absinfo absconfig = { 0 };
     absconfig.minimum = -32767;
@@ -216,6 +197,35 @@ virt_ctlr_pro::virt_ctlr_pro(std::shared_ptr<phys_ctlr> phys, epoll_mgr& epoll_m
     libevdev_enable_event_code(virt_evdev, EV_ABS, ABS_RX, &absconfig);
     libevdev_enable_event_code(virt_evdev, EV_ABS, ABS_RY, &absconfig);
 
+
+    // Emulate analog triggers for android
+#ifdef ANALOG_TRIGGERS
+    struct input_absinfo absconfig_fake = { 0 };
+    absconfig_fake.minimum = 0;
+    absconfig_fake.maximum = 255;
+    absconfig_fake.fuzz = 0;
+    absconfig_fake.flat = 0;
+
+    libevdev_enable_event_code(virt_evdev, EV_ABS, ABS_Z, &absconfig_fake);
+    libevdev_enable_event_code(virt_evdev, EV_ABS, ABS_RZ, &absconfig_fake);
+#endif
+
+
+    // Make sure that all of this configuration remains in sync with the hid-nintendo driver.
+    libevdev_enable_event_type(virt_evdev, EV_KEY);
+    libevdev_enable_event_code(virt_evdev, EV_KEY, BTN_SOUTH, NULL);
+    libevdev_enable_event_code(virt_evdev, EV_KEY, BTN_EAST, NULL);
+    libevdev_enable_event_code(virt_evdev, EV_KEY, BTN_NORTH, NULL);
+    libevdev_enable_event_code(virt_evdev, EV_KEY, BTN_WEST, NULL);
+    libevdev_enable_event_code(virt_evdev, EV_KEY, BTN_MODE, NULL);
+    libevdev_enable_event_code(virt_evdev, EV_KEY, BTN_SELECT, NULL);
+    libevdev_enable_event_code(virt_evdev, EV_KEY, BTN_START, NULL);
+    libevdev_enable_event_code(virt_evdev, EV_KEY, BTN_TL, NULL);
+    libevdev_enable_event_code(virt_evdev, EV_KEY, BTN_TR, NULL);
+    //libevdev_enable_event_code(virt_evdev, EV_KEY, BTN_Z, NULL);
+    libevdev_enable_event_code(virt_evdev, EV_KEY, BTN_THUMBL, NULL);
+    libevdev_enable_event_code(virt_evdev, EV_KEY, BTN_THUMBR, NULL);
+
     // HAT for dpad
     struct input_absinfo dpad_absconfig = { 0 };
     dpad_absconfig.minimum = -1;
@@ -225,17 +235,11 @@ virt_ctlr_pro::virt_ctlr_pro(std::shared_ptr<phys_ctlr> phys, epoll_mgr& epoll_m
     libevdev_enable_event_code(virt_evdev, EV_ABS, ABS_HAT0X, &dpad_absconfig);
     libevdev_enable_event_code(virt_evdev, EV_ABS, ABS_HAT0Y, &dpad_absconfig);
 
-    // Emulate analog triggers for android
-#if defined(ANDROID) || defined(__ANDROID__)
-    struct input_absinfo absconfig_fake = { 0 };
-    absconfig_fake.minimum = 0;
-    absconfig_fake.maximum = 1;
-    absconfig_fake.fuzz = 0;
-    absconfig_fake.flat = 0;
-
-    libevdev_enable_event_code(virt_evdev, EV_ABS, ABS_Z, &absconfig_fake);
-    libevdev_enable_event_code(virt_evdev, EV_ABS, ABS_RZ, &absconfig_fake);
+#ifndef ANALOG_TRIGGERS
+    libevdev_enable_event_code(virt_evdev, EV_KEY, BTN_TL2, NULL);
+    libevdev_enable_event_code(virt_evdev, EV_KEY, BTN_TR2, NULL);
 #endif
+
     libevdev_enable_event_type(virt_evdev, EV_FF);
     libevdev_enable_event_code(virt_evdev, EV_FF, FF_RUMBLE, NULL);
     libevdev_enable_event_code(virt_evdev, EV_FF, FF_PERIODIC, NULL);
@@ -245,10 +249,10 @@ virt_ctlr_pro::virt_ctlr_pro(std::shared_ptr<phys_ctlr> phys, epoll_mgr& epoll_m
     libevdev_enable_event_code(virt_evdev, EV_FF, FF_GAIN, NULL);
 
     // Set the product information to a non-existent product info (but with virtual bus type)
-    libevdev_set_id_vendor(virt_evdev, 0x57e);
-    libevdev_set_id_product(virt_evdev, 0x2008); // HACK?
-    libevdev_set_id_bustype(virt_evdev, BUS_VIRTUAL);
-    libevdev_set_id_version(virt_evdev, 0x0000);
+    libevdev_set_id_vendor(virt_evdev,  VIRT_VENDOR);
+    libevdev_set_id_product(virt_evdev, VIRT_PRODUCT);
+    libevdev_set_id_bustype(virt_evdev, BUS_USB);
+    libevdev_set_id_version(virt_evdev, VIRT_VERSION);
 
     // Enable LED events
     libevdev_enable_event_type(virt_evdev, EV_LED);

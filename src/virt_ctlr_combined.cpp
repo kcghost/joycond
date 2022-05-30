@@ -252,7 +252,7 @@ virt_ctlr_combined::virt_ctlr_combined(std::shared_ptr<phys_ctlr> physl, std::sh
         exit(1);
     }
 
-    libevdev_set_name(virt_evdev, "Nintendo Switch Combined Joy-Cons");
+    libevdev_set_name(virt_evdev, VIRT_COMBINED);
 
     // Make sure that all of this configuration remains in sync with the hid-nintendo driver.
     libevdev_enable_event_type(virt_evdev, EV_KEY);
@@ -323,10 +323,10 @@ virt_ctlr_combined::virt_ctlr_combined(std::shared_ptr<phys_ctlr> physl, std::sh
     libevdev_enable_event_code(virt_evdev, EV_FF, FF_GAIN, NULL);
 
     // Set the product information to a left joy-con's product info (but with virtual bus type)
-    libevdev_set_id_vendor(virt_evdev, 0x57e);
-    libevdev_set_id_product(virt_evdev, 0x2008); // HACK?
+    libevdev_set_id_vendor(virt_evdev,  VIRT_VENDOR);
+    libevdev_set_id_product(virt_evdev, VIRT_PRODUCT);
     libevdev_set_id_bustype(virt_evdev, BUS_VIRTUAL);
-    libevdev_set_id_version(virt_evdev, 0x0000);
+    libevdev_set_id_version(virt_evdev, VIRT_VERSION);
 
     // Enable LED events
     libevdev_enable_event_type(virt_evdev, EV_LED);
