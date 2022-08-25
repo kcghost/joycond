@@ -1,0 +1,6 @@
+# Block IMU device
+ATTRS{id/vendor}=="057e", ATTRS{id/product}=="2009", ATTRS{name}=="*IMU*", MODE="0600"
+ATTRS{id/vendor}=="057e", ATTRS{id/product}=="2006", ATTRS{name}=="*IMU*", MODE="0600"
+ATTRS{id/vendor}=="057e", ATTRS{id/product}=="2007", ATTRS{name}=="*IMU*", MODE="0600"
+ATTRS{id/vendor}=="057e", ATTRS{id/product}=="200e", ATTRS{name}=="*IMU*", MODE="0600"
+ATTRS{id/vendor}=="057e", ATTRS{id/product}=="2017", ATTRS{name}=="*IMU*", MODE="0600"
