@@ -197,14 +197,11 @@ virt_ctlr_pro::virt_ctlr_pro(std::shared_ptr<phys_ctlr> phys, epoll_mgr& epoll_m
     libevdev_enable_event_code(virt_evdev, EV_ABS, ABS_RX, &absconfig);
     libevdev_enable_event_code(virt_evdev, EV_ABS, ABS_RY, &absconfig);
 
-    // Emulate analog triggers for xbox
+
+    // Emulate analog triggers for android
 #ifdef ANALOG_TRIGGERS
     struct input_absinfo absconfig_fake = { 0 };
-    // xboxdrv and MoltenGamepad use '0' for minimum, which technically makes more sense
-    // but min == flat causes issues in Kodi and others, they often interpret the flat as a negative pull
-    // perhaps arising from confused logic supporting the wireless xbox controller which uses one axis for both triggers
-    // Will only report 0 (flat) and 255 (full pull), might want configurable
-    absconfig_fake.minimum = -1;
+    absconfig_fake.minimum = 0;
     absconfig_fake.maximum = 255;
     absconfig_fake.fuzz = 0;
     absconfig_fake.flat = 0;
@@ -212,6 +209,7 @@ virt_ctlr_pro::virt_ctlr_pro(std::shared_ptr<phys_ctlr> phys, epoll_mgr& epoll_m
     libevdev_enable_event_code(virt_evdev, EV_ABS, ABS_Z, &absconfig_fake);
     libevdev_enable_event_code(virt_evdev, EV_ABS, ABS_RZ, &absconfig_fake);
 #endif
+
 
     // Make sure that all of this configuration remains in sync with the hid-nintendo driver.
     libevdev_enable_event_type(virt_evdev, EV_KEY);
