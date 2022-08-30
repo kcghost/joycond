@@ -45,6 +45,13 @@ class virt_ctlr
 #define VIRT_PRODUCT    0x028e
 #define VIRT_VERSION    0x0110
 #define ANALOG_TRIGGERS 1
+#define TRIGGER_UNPRESS 0
+// Max (and typical) is 255, but that triggers a nasty bug in Kodi that causes phantom scroll events
+// Presumably real controllers don't often report the full values
+// Experimentally 253 is the highest value you can get away with, rounding down a bit to be safe
+// Anything greater than XINPUT_GAMEPAD_TRIGGER_THRESHOLD(30) should be fine for most things,
+// but already observed it needs to be higher than 128 in some games (tested 192 to get working)
+#define TRIGGER_PRESS   250
 #else
 //06000000 7e05 0000 0820 0000 0000 0000,Nintendo Switch Combined Joy-Cons,
 //a:b0,b:b1,back:b9,dpdown:b15,dpleft:b16,dpright:b17,dpup:b14,guide:b11,leftshoulder:b5,leftstick:b12,lefttrigger:b7,leftx:a0,lefty:a1,rightshoulder:b6,rightstick:b13,righttrigger:b8,rightx:a2,righty:a3,start:b10,x:b3,y:b2,platform:Linux,

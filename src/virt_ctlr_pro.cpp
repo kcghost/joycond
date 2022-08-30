@@ -29,11 +29,11 @@ void virt_ctlr_pro::relay_events(std::shared_ptr<phys_ctlr> phys)
 #ifdef ANALOG_TRIGGERS
             /* remap the ZL and ZR buttons to analog trigger on android */
             if (ev.type == EV_KEY && ev.code == BTN_TL2) {
-                libevdev_uinput_write_event(uidev, EV_ABS, ABS_Z, ev.value * 255);
+                libevdev_uinput_write_event(uidev, EV_ABS, ABS_Z, ev.value ? TRIGGER_PRESS : TRIGGER_UNPRESS);
                 ret = libevdev_next_event(evdev, LIBEVDEV_READ_FLAG_NORMAL, &ev);
                 continue;
             } else if (ev.type == EV_KEY && ev.code == BTN_TR2) {
-                libevdev_uinput_write_event(uidev, EV_ABS, ABS_RZ, ev.value * 255);
+                libevdev_uinput_write_event(uidev, EV_ABS, ABS_RZ, ev.value ? TRIGGER_PRESS : TRIGGER_UNPRESS);
                 ret = libevdev_next_event(evdev, LIBEVDEV_READ_FLAG_NORMAL, &ev);
                 continue;
             }
