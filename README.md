@@ -76,6 +76,8 @@ At time of writing, both of these can be difficult to use, configure, or even bu
 joycond "just works", and is something you need anyway 90% of the time when using these controllers.
 
 # Planned further changes?
+* Refactor into a clean maybe-upstream-pullable branch
+* Fix X/Y button position swap (Can be a good thing, currently matches face)
 * Make combined joycons work
 * Always pair Pro controller "virtually"
 * Compile time switches for A/B and X/Y face button swaps
